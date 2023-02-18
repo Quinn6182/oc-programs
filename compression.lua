@@ -1,10 +1,10 @@
-local data = require("component").data
+local d = require("component").data
 local filesystem = require("filesystem")
 print("What is the directory? ")
 local dir = io.read()
 print("Inflate or Deflate (i or d)? ")
 local action = io.read()
-local function list_dir(path, recursed)
+local function traverse_dir(path, recursed)
     for i in filesystem.list(path) do
         if recursed then
             print(path..i)
@@ -12,8 +12,20 @@ local function list_dir(path, recursed)
             print(path.."/"..i)
         end
         if filesystem.isDirectory(path.."/"..i) then
-            list_dir(path.."/"..i, true)
+            traverse_dir(path.."/"..i, true)
+        end
+        if filesystem.isDirectory(path.."/"..i) == false then
+            f = io.open(path.."/"..i, 'r')
+            data = f:read("*a")
+            f:close()
+            if action == "i" then
+                f = io.open(path.."/"..i, 'w')
+                f:write(d.inflate(data))
+            elseif action == "d" then
+                f = io.open(path.."/"..i, 'w')
+                f:write(d.deflate(data))
+            end
         end
     end
 end
-list_dir(dir, false)
+traverse_dir(dir, false)
